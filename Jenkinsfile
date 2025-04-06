@@ -81,7 +81,7 @@ def deployPython(String environment, int port) {
     bat """
     cd python-greetings
     pm2 delete python-greetings-${environment} || exit 0
-    pm2 start app.py --name python-greetings-${environment} --interpreter python -- --port ${port}
+    pm2 start python app.py --name python-greetings-${environment} -- --port ${port}
     """
 }
 
