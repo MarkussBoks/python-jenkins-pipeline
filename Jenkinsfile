@@ -13,12 +13,9 @@ pipeline {
         stage('Deploy to DEV') {
             steps {
                 script {
-                    echo "Deploying to DEV"
-                    bat '''
-                        pm2 delete python-greetings-DEV || exit 0
-                        cd python-greetings
-                        pm2 start app.py --name python-greetings-DEV --interpreter="D:/Python/python.exe" -- --port=7001
-                    '''
+                    showLogs("BEFORE DEV DEPLOY")
+                    deployPython("DEV", 7001)
+                    showLogs("AFTER DEV DEPLOY")
                 }
             }
         }
@@ -26,7 +23,7 @@ pipeline {
         stage('Test on DEV') {
             steps {
                 script {
-                    testPython("GREETINGS", "DEV", 7001)
+                    testPython("GREETINGS", "dev", 7001)
                     showLogs("AFTER DEV TEST")
                 }
             }
@@ -41,10 +38,11 @@ pipeline {
                 }
             }
         }
+
         stage('Test on STAGING') {
             steps {
                 script {
-                    testPython("GREETINGS", "STAGING", 7002)
+                    testPython("GREETINGS", "staging", 7002)
                     showLogs("AFTER STAGING TEST")
                 }
             }
@@ -59,10 +57,11 @@ pipeline {
                 }
             }
         }
+
         stage('Test on PREPROD') {
             steps {
                 script {
-                    testPython("GREETINGS", "PREPROD", 7003)
+                    testPython("GREETINGS", "preprod", 7003)
                     showLogs("AFTER PREPROD TEST")
                 }
             }
@@ -77,10 +76,11 @@ pipeline {
                 }
             }
         }
+
         stage('Test on PROD') {
             steps {
                 script {
-                    testPython("GREETINGS", "PROD", 7004)
+                    testPython("GREETINGS", "prod", 7004)
                     showLogs("AFTER PROD TEST")
                 }
             }
@@ -88,37 +88,47 @@ pipeline {
     }
 }
 
+// ---------- Izpildes funkcijas ----------
+
 def installPipDeps() {
     echo "Installing pip dependencies for python-greetings..."
     bat '''
-    if exist python-greetings rmdir /s /q python-greetings
-    git clone https://github.com/mtararujs/python-greetings.git
-    pip install -r python-greetings\\requirements.txt
+        if exist python-greetings rmdir /s /q python-greetings
+        git clone https://github.com/mtararujs/python-greetings.git
+        pip install -r python-greetings\\requirements.txt
     '''
 }
 
 def deployPython(envName, port) {
     echo "Deploying to ${envName}"
     bat """
-    pm2 delete python-greetings-${envName} || exit 0
-    cd python-greetings
-    pm2 start app.py --name python-greetings-${envName} --interpreter="D:/Python/python.exe" -- --port=${port}
-    ping 127.0.0.1 -n 6 >nul
+        pm2 delete python-greetings-${envName} || exit 0
+        cd python-greetings
+        pm2 start app.py --name python-greetings-${envName} --interpreter="D:/Python/python.exe" -- --port=${port}
+        ping 127.0.0.1 -n 6 >nul
     """
 }
 
-def testPython(String test_set, String environment, int port) {
-    echo "Testing ${test_set} on ${environment}..."
+def testPython(testSet, envName, port) {
+    echo "Testing ${testSet} on ${envName.toUpperCase()}..."
+
     bat """
-    FOR /L %%i IN (1,1,5) DO (
-        echo Attempt %%i to reach http://localhost:${port}/greetings
-        curl http://localhost:${port}/greetings && EXIT /B 0
-        timeout /t 2 >nul
-    )
-    EXIT /B 1
+        FOR /L %%i IN (1,1,5) DO (
+            echo Attempt %%i to reach http://localhost:${port}/greetings
+            curl http://localhost:${port}/greetings && EXIT /B 0
+            timeout /t 2 >nul
+        )
+        EXIT /B 1
+    """
+
+    bat """
+        if exist course-js-api-framework rmdir /s /q course-js-api-framework
+        git clone https://github.com/mtararujs/course-js-api-framework
+        cd course-js-api-framework
+        call npm install
+        call npm run greetings greetings_${envName}
     """
 }
-
 
 def showLogs(String message) {
     echo "----- PM2 STATUS (${message}) -----"
