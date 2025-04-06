@@ -93,31 +93,45 @@ def installPipDeps() {
     '''
 }
 
-def deployPython(String environment, int port) {
-    echo "----- PM2 STATUS (BEFORE ${environment} DEPLOY) -----"
-    bat "pm2 list"
+def deploy(envName, port) {
+    stage("Deploy to ${envName.toUpperCase()}") {
+        script {
+            echo "----- PM2 STATUS (BEFORE ${envName.toUpperCase()} DEPLOY) -----"
+            bat "pm2 list"
 
-    echo "Deploying to ${environment} on port ${port}..."
-    bat """
-    cd python-greetings
-    echo Checking app.py exists...
-    dir app.py
+            echo "Deploying to ${envName.toUpperCase()} on port ${port}..."
 
-    echo Deleting old instance...
-    pm2 delete python-greetings-${environment} || exit 0
+            bat """
+                cd python-greetings
+                echo Checking current directory...
+                cd
+                dir
 
-    echo Waiting 2s after delete...
-    timeout /t 2 >nul
+                echo Checking app.py exists...
+                dir app.py
 
-    echo Starting new instance...
-    pm2 start app.py --name python-greetings-${environment} --interpreter python -- --port ${port}
-    """
+                echo PM2 location and version check...
+                where pm2
+                pm2 -v
 
-    echo "----- PM2 STATUS (AFTER ${environment} DEPLOY) -----"
-    bat "pm2 list"
+                echo Deleting old PM2 process for ${envName}...
+                pm2 delete python-greetings-${envName.toUpperCase()} || exit /B 0
+
+                echo Starting new PM2 process...
+                pm2 start app.py --name "python-greetings-${envName.toUpperCase()}" --interpreter python -- --port=${port}
+
+                echo Waiting a few seconds before checking logs...
+                timeout /t 3 >nul
+
+                echo PM2 process list after deploy:
+                pm2 list
+
+                echo Last 50 log lines:
+                pm2 logs python-greetings-${envName.toUpperCase()} --lines 50
+            """
+        }
+    }
 }
-
-
 
 def testPython(String test_set, String environment, int port) {
     echo "Testing ${test_set} on ${environment}..."
