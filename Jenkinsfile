@@ -24,7 +24,6 @@ pipeline {
             }
         }
 
-
         stage('test-on-dev') {
             steps {
                 echo 'Waiting for service on port 3000...'
