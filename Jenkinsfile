@@ -14,22 +14,23 @@ pipeline {
 
         stage('deploy-to-dev') {
             steps {
-                echo 'Deploying python-greetings to dev...'
+                echo 'Deploying python-greetings to dev on default port 3000...'
                 bat '''
                 cd python-greetings
                 pm2 delete python-greetings-dev || exit 0
-                pm2 start app.py --name python-greetings-dev --interpreter python -- --port 7001
+                pm2 start app.py --name python-greetings-dev --interpreter python
                 pm2 logs python-greetings-dev --lines 10
                 '''
             }
         }
 
+
         stage('test-on-dev') {
             steps {
-                echo 'Waiting 3s for the app to become ready...'
+                echo 'Waiting for service on port 3000...'
                 bat 'ping 127.0.0.1 -n 4 >nul'
-                echo 'Testing python-greetings on port 7001...'
-                bat 'curl http://localhost:7001'
+                echo 'Testing service on port 3000...'
+                bat 'curl http://localhost:3000/greetings'
             }
         }
     }
