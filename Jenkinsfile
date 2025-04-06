@@ -103,21 +103,10 @@ def deployPython(envName, port) {
     bat """
     pm2 delete python-greetings-${envName} || exit 0
     cd python-greetings
-
-    echo Starting new PM2 instance...
     pm2 start app.py --name python-greetings-${envName} --interpreter="D:/Python/python.exe" -- --port=${port}
-
-    echo Sleeping 5 sec to allow startup...
     ping 127.0.0.1 -n 6 >nul
-
-    echo Checking status...
-    pm2 list
     """
 }
-
-
-
-
 
 def testPython(String test_set, String environment, int port) {
     echo "Testing ${test_set} on ${environment}..."
