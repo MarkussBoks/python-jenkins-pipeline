@@ -107,13 +107,14 @@ def deployPython(envName, port) {
     echo Starting new PM2 instance...
     pm2 start app.py --name python-greetings-${envName} --interpreter="D:/Python/python.exe" -- --port=${port}
 
-    echo Waiting for app to start...
-    ping 127.0.0.1 -n 7 >nul
+    echo Sleeping 5 sec to allow startup...
+    ping 127.0.0.1 -n 6 >nul
 
-    echo Show logs to check app started...
-    pm2 logs python-greetings-${envName} --lines 10
+    echo Checking status...
+    pm2 list
     """
 }
+
 
 
 
