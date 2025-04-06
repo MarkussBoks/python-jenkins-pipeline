@@ -15,12 +15,18 @@ pipeline {
         stage('deploy-to-dev') {
             steps {
                 echo 'Deploying python-greetings to dev...'
-                // pārejam uz klonētās mapes ceļu un izpildām PM2 komandas
                 bat '''
                 cd python-greetings
                 pm2 delete python-greetings-dev || exit 0
                 pm2 start app.py --name python-greetings-dev --interpreter python
                 '''
+            }
+        }
+
+        stage('test-on-dev') {
+            steps {
+                echo 'Testing microservice on port 7001...'
+                bat 'curl http://localhost:7001'
             }
         }
     }
