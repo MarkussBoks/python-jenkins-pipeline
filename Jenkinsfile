@@ -26,7 +26,7 @@ pipeline {
         stage('test-on-dev') {
             steps {
                 echo 'Waiting 3s for the app to become ready...'
-                bat 'timeout /T 3'
+                bat 'timeout /T 3 >nul'
                 echo 'Testing python-greetings on port 7001...'
                 bat 'curl http://localhost:7001'
             }
