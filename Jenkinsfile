@@ -103,7 +103,7 @@ def deployPython(String environment, int port) {
     dir app.py
 
     echo Deleting old instance...
-    pm2 delete python-greetings-${environment} || exit 0
+    //pm2 delete python-greetings-${environment} || exit 0
 
     echo Starting PM2 app...
     pm2 start app.py --name python-greetings-${environment} --interpreter python -- --port ${port}
