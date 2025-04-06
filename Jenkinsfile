@@ -99,41 +99,37 @@ def installPipDeps() {
 }
 
 def deployPython(envName, port) {
-    echo "----- Deploying to ${envName} on port ${port} -----"
-
+    echo "Deploying to ${envName}"
     bat """
-    echo --- Debugging PM2 environment ---
-    where pm2
-    pm2 -v
-
-    echo --- Moving into app directory ---
+    pm2 delete python-greetings-${envName} || exit 0
     cd python-greetings
 
-    echo --- Checking app.py exists ---
-    dir app.py
-
-    echo --- Deleting existing PM2 instance if any ---
-    pm2 delete python-greetings-${envName} || exit 0
-
-    echo --- PM2 Status after delete ---
-    pm2 list
-
-    echo --- Starting new PM2 instance ---
+    echo Starting new PM2 instance...
     pm2 start app.py --name python-greetings-${envName} --interpreter="D:/Python/python.exe" -- --port=${port}
 
-    echo --- PM2 Status after start ---
-    pm2 list
+    echo Waiting for app to start...
+    ping 127.0.0.1 -n 7 >nul
+
+    echo Show logs to check app started...
+    pm2 logs python-greetings-${envName} --lines 10
     """
 }
+
+
 
 
 def testPython(String test_set, String environment, int port) {
     echo "Testing ${test_set} on ${environment}..."
     bat """
-    ping 127.0.0.1 -n 4 >nul
-    curl http://localhost:${port}/greetings
+    FOR /L %%i IN (1,1,5) DO (
+        echo Attempt %%i to reach http://localhost:${port}/greetings
+        curl http://localhost:${port}/greetings && EXIT /B 0
+        timeout /t 2 >nul
+    )
+    EXIT /B 1
     """
 }
+
 
 def showLogs(String message) {
     echo "----- PM2 STATUS (${message}) -----"
