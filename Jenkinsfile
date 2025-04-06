@@ -26,11 +26,10 @@ pipeline {
         stage('test-on-dev') {
             steps {
                 echo 'Waiting 3s for the app to become ready...'
-                bat 'timeout /T 3 >nul'
+                bat 'ping 127.0.0.1 -n 4 >nul'
                 echo 'Testing python-greetings on port 7001...'
                 bat 'curl http://localhost:7001'
             }
         }
-  
     }
 }
