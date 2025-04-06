@@ -24,8 +24,6 @@ pipeline {
             }
         }
 
-
-
         stage('test-on-dev') {
             steps {
                 echo 'Waiting 3s for the app to become ready...'
