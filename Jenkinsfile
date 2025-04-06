@@ -19,9 +19,12 @@ pipeline {
                 cd python-greetings
                 pm2 delete python-greetings-dev || exit 0
                 pm2 start app.py --name python-greetings-dev --interpreter python -- --port 7001
+                pm2 logs python-greetings-dev --lines 10
                 '''
             }
         }
+
+
 
         stage('test-on-dev') {
             steps {
