@@ -23,13 +23,16 @@ pipeline {
             }
         }
 
-        stage('test-on-dev') {
+        stage('deploy-to-dev') {
             steps {
-                echo 'Waiting 3s for the app to become ready...'
-                bat 'ping 127.0.0.1 -n 4 >nul'
-                echo 'Testing python-greetings on port 7001...'
-                bat 'curl http://localhost:7001'
+                echo 'Deploying python-greetings to dev...'
+                bat '''
+                cd python-greetings
+                pm2 delete python-greetings-dev || exit 0
+                pm2 start app.py --name python-greetings-dev --interpreter python -- --port 7001
+                '''
             }
         }
+
     }
 }
