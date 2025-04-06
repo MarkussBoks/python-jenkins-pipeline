@@ -13,12 +13,17 @@ pipeline {
         stage('Deploy to DEV') {
             steps {
                 script {
-                    showLogs("BEFORE DEV DEPLOY")
-                    deployPython("DEV", 7001)
-                    showLogs("AFTER DEV DEPLOY")
+                    echo "Deploying to DEV"
+                    bat '''
+                        pm2 delete python-greetings-DEV || exit 0
+                        cd python-greetings
+                        pm2 start app.py --name python-greetings-DEV --interpreter="D:/Python/python.exe" -- --port=7001
+                    '''
                 }
             }
         }
+
+
         stage('Test on DEV') {
             steps {
                 script {
@@ -93,45 +98,34 @@ def installPipDeps() {
     '''
 }
 
-def deploy(envName, port) {
-    stage("Deploy to ${envName.toUpperCase()}") {
-        script {
-            echo "----- PM2 STATUS (BEFORE ${envName.toUpperCase()} DEPLOY) -----"
-            bat "pm2 list"
+def deployPython(envName, port) {
+    echo "----- Deploying to ${envName} on port ${port} -----"
 
-            echo "Deploying to ${envName.toUpperCase()} on port ${port}..."
+    bat """
+    echo --- Debugging PM2 environment ---
+    where pm2
+    pm2 -v
 
-            bat """
-                cd python-greetings
-                echo Checking current directory...
-                cd
-                dir
+    echo --- Moving into app directory ---
+    cd python-greetings
 
-                echo Checking app.py exists...
-                dir app.py
+    echo --- Checking app.py exists ---
+    dir app.py
 
-                echo PM2 location and version check...
-                where pm2
-                pm2 -v
+    echo --- Deleting existing PM2 instance if any ---
+    pm2 delete python-greetings-${envName} || exit 0
 
-                echo Deleting old PM2 process for ${envName}...
-                pm2 delete python-greetings-${envName.toUpperCase()} || exit /B 0
+    echo --- PM2 Status after delete ---
+    pm2 list
 
-                echo Starting new PM2 process...
-                pm2 start app.py --name "python-greetings-${envName.toUpperCase()}" --interpreter python -- --port=${port}
+    echo --- Starting new PM2 instance ---
+    pm2 start app.py --name python-greetings-${envName} --interpreter="D:/Python/python.exe" -- --port=${port}
 
-                echo Waiting a few seconds before checking logs...
-                timeout /t 3 >nul
-
-                echo PM2 process list after deploy:
-                pm2 list
-
-                echo Last 50 log lines:
-                pm2 logs python-greetings-${envName.toUpperCase()} --lines 50
-            """
-        }
-    }
+    echo --- PM2 Status after start ---
+    pm2 list
+    """
 }
+
 
 def testPython(String test_set, String environment, int port) {
     echo "Testing ${test_set} on ${environment}..."
