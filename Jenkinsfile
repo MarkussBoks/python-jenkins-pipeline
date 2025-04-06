@@ -67,6 +67,7 @@ pipeline {
         }
     }
 }
+
 def installPipDeps() {
     echo "Installing pip dependencies for python-greetings..."
     bat '''
@@ -79,16 +80,16 @@ def installPipDeps() {
 def deployPython(String environment, int port) {
     echo "Deploying to ${environment} on port ${port}..."
     bat """
-    cd python-greetings
-    pm2 delete python-greetings-${environment} || exit 0
-    pm2 start python app.py --name python-greetings-${environment} -- --port ${port}
+        cd python-greetings
+        pm2 delete python-greetings-${environment} || exit 0
+        pm2 start app.py --name python-greetings-${environment} --interpreter python -- --port ${port}
     """
 }
 
 def testPython(String test_set, String environment, int port) {
     echo "Testing ${test_set} on ${environment}..."
     bat """
-    ping 127.0.0.1 -n 4 >nul
-    curl http://localhost:${port}/greetings
+        ping 127.0.0.1 -n 4 >nul
+        curl http://localhost:${port}/greetings
     """
 }
