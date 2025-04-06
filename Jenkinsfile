@@ -95,12 +95,30 @@ def installPipDeps() {
 
 def deployPython(String environment, int port) {
     echo "Deploying to ${environment} on port ${port}..."
+
     bat """
     cd python-greetings
+
+    echo Checking app.py exists...
+    dir app.py
+
+    echo Deleting old instance...
     pm2 delete python-greetings-${environment} || exit 0
+
+    echo Starting PM2 app...
     pm2 start app.py --name python-greetings-${environment} --interpreter python -- --port ${port}
+
+    echo Waiting 3 seconds before checking logs...
+    timeout /t 3
+
+    echo PM2 list after start:
+    pm2 list
+
+    echo PM2 logs for ${environment}:
+    pm2 logs python-greetings-${environment} --lines 20
     """
 }
+
 
 def testPython(String test_set, String environment, int port) {
     echo "Testing ${test_set} on ${environment}..."
