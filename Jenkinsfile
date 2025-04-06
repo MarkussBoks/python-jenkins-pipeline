@@ -11,5 +11,17 @@ pipeline {
                 bat 'pip install -r python-greetings\\requirements.txt'
             }
         }
+
+        stage('deploy-to-dev') {
+            steps {
+                echo 'Deploying python-greetings to dev...'
+                // pārejam uz klonētās mapes ceļu un izpildām PM2 komandas
+                bat '''
+                cd python-greetings
+                pm2 delete python-greetings-dev || exit 0
+                pm2 start app.py --name python-greetings-dev --interpreter python
+                '''
+            }
+        }
     }
 }
