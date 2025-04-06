@@ -25,9 +25,12 @@ pipeline {
 
         stage('test-on-dev') {
             steps {
-                echo 'Testing microservice on port 7001...'
+                echo 'Waiting 3s for the app to become ready...'
+                bat 'timeout /T 3'
+                echo 'Testing python-greetings on port 7001...'
                 bat 'curl http://localhost:7001'
             }
         }
+  
     }
 }
