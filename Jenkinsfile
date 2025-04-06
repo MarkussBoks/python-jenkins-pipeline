@@ -9,10 +9,13 @@ pipeline {
                 }
             }
         }
+
         stage('Deploy to DEV') {
             steps {
                 script {
+                    showLogs("BEFORE DEV DEPLOY")
                     deployPython("DEV", 7001)
+                    showLogs("AFTER DEV DEPLOY")
                 }
             }
         }
@@ -20,13 +23,17 @@ pipeline {
             steps {
                 script {
                     testPython("GREETINGS", "DEV", 7001)
+                    showLogs("AFTER DEV TEST")
                 }
             }
         }
+
         stage('Deploy to STAGING') {
             steps {
                 script {
+                    showLogs("BEFORE STAGING DEPLOY")
                     deployPython("STAGING", 7002)
+                    showLogs("AFTER STAGING DEPLOY")
                 }
             }
         }
@@ -34,13 +41,17 @@ pipeline {
             steps {
                 script {
                     testPython("GREETINGS", "STAGING", 7002)
+                    showLogs("AFTER STAGING TEST")
                 }
             }
         }
+
         stage('Deploy to PREPROD') {
             steps {
                 script {
+                    showLogs("BEFORE PREPROD DEPLOY")
                     deployPython("PREPROD", 7003)
+                    showLogs("AFTER PREPROD DEPLOY")
                 }
             }
         }
@@ -48,13 +59,17 @@ pipeline {
             steps {
                 script {
                     testPython("GREETINGS", "PREPROD", 7003)
+                    showLogs("AFTER PREPROD TEST")
                 }
             }
         }
+
         stage('Deploy to PROD') {
             steps {
                 script {
+                    showLogs("BEFORE PROD DEPLOY")
                     deployPython("PROD", 7004)
+                    showLogs("AFTER PROD DEPLOY")
                 }
             }
         }
@@ -62,6 +77,7 @@ pipeline {
             steps {
                 script {
                     testPython("GREETINGS", "PROD", 7004)
+                    showLogs("AFTER PROD TEST")
                 }
             }
         }
@@ -92,4 +108,9 @@ def testPython(String test_set, String environment, int port) {
     ping 127.0.0.1 -n 4 >nul
     curl http://localhost:${port}/greetings
     """
+}
+
+def showLogs(String message) {
+    echo "----- PM2 STATUS (${message}) -----"
+    bat "pm2 list"
 }
